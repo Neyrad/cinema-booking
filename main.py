@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
+from auth import get_current_user
 import models
 import database
 
@@ -37,3 +38,8 @@ def book_movie(user_id: int, movie_id: int, db: Session = Depends(database.get_d
 @app.get("/bookings/")
 def get_bookings(db: Session = Depends(database.get_db)):
     return db.query(models.Booking).all()
+
+@app.get("/bookings/me")
+def read_my_bookings(db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
+    return db.query(models.Booking).filter(models.Booking.user_id == current_user.id).all()
+
