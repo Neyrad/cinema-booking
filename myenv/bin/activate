@@ -39,10 +39,10 @@ deactivate nondestructive
 if [ "${OSTYPE:-}" = "cygwin" ] || [ "${OSTYPE:-}" = "msys" ] ; then
     # transform D:\path\to\venv to /d/path/to/venv on MSYS
     # and to /cygdrive/d/path/to/venv on Cygwin
-    export VIRTUAL_ENV=$(cygpath /mnt/c/Dev/_PythonProject/myenv)
+    export VIRTUAL_ENV=$(cygpath /mnt/c/Dev/python_project/myenv)
 else
     # use the path as-is
-    export VIRTUAL_ENV=/mnt/c/Dev/_PythonProject/myenv
+    export VIRTUAL_ENV=/mnt/c/Dev/python_project/myenv
 fi
 
 _OLD_VIRTUAL_PATH="$PATH"
@@ -68,3 +68,4 @@ fi
 # Call hash to forget past commands. Without forgetting
 # past commands the $PATH changes we made may not be respected
 hash -r 2> /dev/null
+export PYTHONPATH=$PYTHONPATH:/mnt/c/Dev/python_project/myenv/bin/
