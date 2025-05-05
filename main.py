@@ -7,15 +7,11 @@ models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI()
 
-def get_db():
-    db = database.SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+from auth import router as auth_router
+app.include_router(auth_router)
 
 @app.post("/users/")
-def create_user(name: str, email: str, db: Session = Depends(get_db)):
+def create_user(name: str, email: str, db: Session = Depends(database.get_db)):
     user = models.User(name=name, email=email)
     db.add(user)
     db.commit()
@@ -23,7 +19,7 @@ def create_user(name: str, email: str, db: Session = Depends(get_db)):
     return user
 
 @app.post("/movies/")
-def create_movie(title: str, description: str, db: Session = Depends(get_db)):
+def create_movie(title: str, description: str, db: Session = Depends(database.get_db)):
     movie = models.Movie(title=title, description=description)
     db.add(movie)
     db.commit()
@@ -31,7 +27,7 @@ def create_movie(title: str, description: str, db: Session = Depends(get_db)):
     return movie
 
 @app.post("/bookings/")
-def book_movie(user_id: int, movie_id: int, db: Session = Depends(get_db)):
+def book_movie(user_id: int, movie_id: int, db: Session = Depends(database.get_db)):
     booking = models.Booking(user_id=user_id, movie_id=movie_id)
     db.add(booking)
     db.commit()
@@ -39,5 +35,5 @@ def book_movie(user_id: int, movie_id: int, db: Session = Depends(get_db)):
     return booking
 
 @app.get("/bookings/")
-def get_bookings(db: Session = Depends(get_db)):
+def get_bookings(db: Session = Depends(database.get_db)):
     return db.query(models.Booking).all()
