@@ -1,9 +1,22 @@
+"""Database models for the cinema booking application."""
+
+from datetime import datetime
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from app.database import Base
-from datetime import datetime
+
 
 class User(Base):
+    """
+    Database model for a user.
+
+    Attributes:
+        id (int): Primary key.
+        name (str): Name of the user.
+        email (str): Email address (unique).
+        password_hash (str): Hashed user password.
+        bookings (list[Booking]): List of bookings made by the user.
+    """
     __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True, index=True)
@@ -15,6 +28,15 @@ class User(Base):
 
 
 class Movie(Base):
+    """
+    Database model for a movie.
+
+    Attributes:
+        id (int): Primary key.
+        title (str): Title of the movie.
+        description (str): Description of the movie.
+        bookings (list[Booking]): List of bookings for this movie.
+    """
     __tablename__ = 'movies'
 
     id = Column(Integer, primary_key=True, index=True)
@@ -25,6 +47,17 @@ class Movie(Base):
 
 
 class Booking(Base):
+    """
+    Database model for a movie booking.
+
+    Attributes:
+        id (int): Primary key.
+        user_id (int): Foreign key to User.
+        movie_id (int): Foreign key to Movie.
+        timestamp (datetime): Booking time (defaults to now).
+        user (User): Associated user.
+        movie (Movie): Associated movie.
+    """
     __tablename__ = 'bookings'
 
     id = Column(Integer, primary_key=True, index=True)

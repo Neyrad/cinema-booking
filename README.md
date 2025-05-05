@@ -58,6 +58,7 @@ app/
 tests/
   test_1.py
   test_2.py
+pylint.txt
 requirements.txt
 test.sh
 test.db
