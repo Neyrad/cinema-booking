@@ -42,9 +42,9 @@ def test_get_bookings(db):
     response = client.get("/bookings/")
     assert response.status_code == 200
     data = response.json()
-    assert isinstance(data, list)  # Перевіряємо, що відповідь - це список
+    assert isinstance(data, list)
 
-from app.auth import create_access_token  # якщо auth.py — в app/
+from app.auth import create_access_token
 
 def test_read_my_bookings(db):
     user = User(name="Test User228", email="testuser228@example.com", password_hash="hashed")
