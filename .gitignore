@@ -1,7 +1,57 @@
+# Python
 __pycache__/
-myenv/
+*.py[cod]
+*.pyo
+*.pyd
 *.pyc
+*.pdb
+*.egg-info/
+*.egg
+*.log
+
+# Byte-compiled and cache
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.cache
+
+# Virtual environment
 .env
-*.sqlite3
-.idea/
+.venv
+env/
+venv/
+myenv/
+
+# SQLite database
+*.db
+test.db
+
+# IDEs
 .vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test coverage
+htmlcov/
+.coverage
+coverage.xml
+
+# Pytest cache
+.pytest_cache/
+
+# Logs
+*.log
+
+# Migrations
+migrations/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Env files
+.env.*
+.env

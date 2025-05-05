@@ -5,8 +5,8 @@ from passlib.context import CryptContext
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 
-from database import get_db
-from models import User
+from app.database import get_db
+from app.models import User
 
 SECRET_KEY = "your-secret-key"
 ALGORITHM = "HS256"

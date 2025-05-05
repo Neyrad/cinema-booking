@@ -1,14 +1,14 @@
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
-from auth import get_current_user
-import models
-import database
+from app.auth import get_current_user
+import app.models as models
+import app.database as database
 
 models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI()
 
-from auth import router as auth_router
+from app.auth import router as auth_router
 app.include_router(auth_router)
 
 @app.get("/")
