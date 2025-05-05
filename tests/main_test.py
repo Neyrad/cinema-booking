@@ -64,9 +64,21 @@ def test_read_my_bookings(db):
     token = create_access_token({"sub": user.email})
 
     headers = {"Authorization": f"Bearer {token}"}
-    response = client.get("/bookings/me", headers=headers)
+    response = client.get("/mybookings/", headers=headers)
 
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 1
     assert data[0]["user_id"] == user.id
+
+
+def test_create_user():
+    response = client.post(
+        "/users/",
+        params={"name": "Andrey", "email": "andrey@example.com"}
+    )
+    assert response.status_code == 200
+    json_data = response.json()
+    assert json_data["name"] == "Andrey"
+    assert json_data["email"] == "andrey@example.com"
+    assert "id" in json_data

@@ -1,7 +1,8 @@
 """Main application module for the FastAPI cinema booking project."""
 
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from app.auth import get_current_user, router as auth_router
 import app.models as models
@@ -13,15 +14,33 @@ app = FastAPI()
 
 app.include_router(auth_router)
 
-@app.get("/")
-def read_root():
-    """
-    Root endpoint that returns a simple greeting.
+from fastapi import HTTPException
 
-    Returns:
-        dict: Greeting message.
-    """
-    return {"message": "Hello World"}
+# ---------------- USERS ----------------
+
+@app.get("/users/")
+def get_users(db: Session = Depends(database.get_db)):
+    return db.query(models.User).all()
+
+@app.put("/users/{user_id}")
+def update_user(user_id: int, name: str, email: str, db: Session = Depends(database.get_db)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    user.name = name
+    user.email = email
+    db.commit()
+    db.refresh(user)
+    return user
+
+@app.delete("/users/{user_id}")
+def delete_user(user_id: int, db: Session = Depends(database.get_db)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    db.delete(user)
+    db.commit()
+    return {"message": "User deleted"}
 
 @app.post("/users/")
 def create_user(name: str, email: str, db: Session = Depends(database.get_db)):
@@ -42,6 +61,33 @@ def create_user(name: str, email: str, db: Session = Depends(database.get_db)):
     db.refresh(user)
     return user
 
+
+# ---------------- MOVIES ----------------
+
+@app.get("/movies/")
+def get_movies(db: Session = Depends(database.get_db)):
+    return db.query(models.Movie).all()
+
+@app.put("/movies/{movie_id}")
+def update_movie(movie_id: int, title: str, description: str, db: Session = Depends(database.get_db)):
+    movie = db.query(models.Movie).filter(models.Movie.id == movie_id).first()
+    if not movie:
+        raise HTTPException(status_code=404, detail="Movie not found")
+    movie.title = title
+    movie.description = description
+    db.commit()
+    db.refresh(movie)
+    return movie
+
+@app.delete("/movies/{movie_id}")
+def delete_movie(movie_id: int, db: Session = Depends(database.get_db)):
+    movie = db.query(models.Movie).filter(models.Movie.id == movie_id).first()
+    if not movie:
+        raise HTTPException(status_code=404, detail="Movie not found")
+    db.delete(movie)
+    db.commit()
+    return {"message": "Movie deleted"}
+
 @app.post("/movies/")
 def create_movie(title: str, description: str, db: Session = Depends(database.get_db)):
     """
@@ -60,6 +106,51 @@ def create_movie(title: str, description: str, db: Session = Depends(database.ge
     db.commit()
     db.refresh(movie)
     return movie
+
+@app.get("/movies/recommend")
+def recommend_movies(top_n: int = Query(5, ge=1), db: Session = Depends(database.get_db)):
+    """
+    Recommend the top N most popular movies based on number of bookings.
+    """
+    results = (
+        db.query(models.Movie.title, models.Movie.description, func.count(models.Booking.id).label("bookings"))
+        .join(models.Booking, models.Movie.id == models.Booking.movie_id)
+        .group_by(models.Movie.id)
+        .order_by(func.count(models.Booking.id).desc())
+        .limit(top_n)
+        .all()
+    )
+
+    return [{"title": r.title, "description": r.description, "bookings": r.bookings} for r in results]
+
+# ---------------- BOOKINGS ----------------
+
+@app.get("/bookings/{booking_id}")
+def get_booking(booking_id: int, db: Session = Depends(database.get_db)):
+    booking = db.query(models.Booking).filter(models.Booking.id == booking_id).first()
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    return booking
+
+@app.put("/bookings/{booking_id}")
+def update_booking(booking_id: int, user_id: int, movie_id: int, db: Session = Depends(database.get_db)):
+    booking = db.query(models.Booking).filter(models.Booking.id == booking_id).first()
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    booking.user_id = user_id
+    booking.movie_id = movie_id
+    db.commit()
+    db.refresh(booking)
+    return booking
+
+@app.delete("/bookings/{booking_id}")
+def delete_booking(booking_id: int, db: Session = Depends(database.get_db)):
+    booking = db.query(models.Booking).filter(models.Booking.id == booking_id).first()
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    db.delete(booking)
+    db.commit()
+    return {"message": "Booking deleted"}
 
 @app.post("/bookings/")
 def book_movie(user_id: int, movie_id: int, db: Session = Depends(database.get_db)):
@@ -93,7 +184,9 @@ def get_bookings(db: Session = Depends(database.get_db)):
     """
     return db.query(models.Booking).all()
 
-@app.get("/bookings/me")
+# ----------------------------------------------------
+
+@app.get("/mybookings/")
 def read_my_bookings(
     db: Session = Depends(database.get_db),
     current_user: models.User = Depends(get_current_user)
@@ -109,3 +202,4 @@ def read_my_bookings(
         list[Booking]: List of user's bookings.
     """
     return db.query(models.Booking).filter(models.Booking.user_id == current_user.id).all()
+
